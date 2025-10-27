@@ -1,0 +1,279 @@
+<div class="app-container">
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <p>Manage Tenant Details</p>
+    </div>
+    <ul class="sidebar-menu">
+      <li [class.active]="selectedOption === 'createTenant'">
+        <a (click)="selectOption('createTenant')">
+          <i class="fas fa-plus-circle"></i> Create Tenant
+        </a>
+      </li>
+      <li [class.active]="selectedOption === 'viewTenants'">
+        <a (click)="selectOption('viewTenants')">
+          <i class="fas fa-list"></i> View Tenants
+        </a>
+      </li>
+      <li [class.active]="selectedOption === 'updateTenant'">
+        <a (click)="selectOption('updateTenant')">
+          <i class="fas fa-edit"></i> Update Tenant
+        </a>
+      </li>
+      <li [class.active]="selectedOption === 'deleteTenant'">
+        <a (click)="selectOption('deleteTenant')">
+          <i class="fas fa-trash"></i> Delete Tenant
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="main-content">
+    <div *ngIf="successMessage" class="alert alert-success">
+      {{ successMessage }}
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+
+    <div class="content-section" *ngIf="selectedOption === 'createTenant'">
+      <h2>Create New Tenant</h2>
+      <form
+        [formGroup]="tenantForm"
+        (ngSubmit)="onSubmit()"
+        class="apartment-form"
+      >
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tenantId">Tenant ID</label>
+            <input
+              id="tenantId"
+              formControlName="tenantId"
+              type="text"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input
+              id="fullName"
+              formControlName="fullName"
+              type="text"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input id="email" formControlName="email" type="email" required />
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone</label>
+            <input id="phone" formControlName="phone" type="text" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="apartmentNumber">Apartment Number</label>
+            <input
+              id="apartmentNumber"
+              formControlName="apartmentNumber"
+              type="text"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="leaseStartDate">Lease Start Date</label>
+            <input
+              id="leaseStartDate"
+              formControlName="leaseStartDate"
+              type="date"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="leaseEndDate">Lease End Date</label>
+            <input
+              id="leaseEndDate"
+              formControlName="leaseEndDate"
+              type="date"
+              required
+            />
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="!tenantForm.valid" class="submit-btn">
+          Create Tenant
+        </button>
+      </form>
+    </div>
+
+    <div class="content-section" *ngIf="selectedOption === 'viewTenants'">
+      <h2>View Tenants</h2>
+      <div class="search-section">
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search by tenant ID or name"
+          (input)="filterTenants()"
+        />
+      </div>
+
+      <div *ngIf="!searchQuery || tenants.length > 0">
+        <div class="apartment-list">
+          <div *ngFor="let tenant of filteredTenants" class="apartment-item">
+            <p><strong>Tenant ID:</strong> {{ tenant.tenantId }}</p>
+            <p><strong>Full Name:</strong> {{ tenant.fullName }}</p>
+            <p><strong>Email:</strong> {{ tenant.email }}</p>
+            <p><strong>Phone:</strong> {{ tenant.phone }}</p>
+            <p>
+              <strong>Apartment Number:</strong> {{ tenant.apartmentNumber }}
+            </p>
+            <p>
+              <strong>Lease Start Date:</strong> {{ tenant.leaseStartDate }}
+            </p>
+            <p><strong>Lease End Date:</strong> {{ tenant.leaseEndDate }}</p>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="filteredTenants.length === 0">
+        <p>No tenants found for the search criteria.</p>
+      </div>
+    </div>
+
+    <div class="content-section" *ngIf="selectedOption === 'updateTenant'">
+      <h2>Update Tenant</h2>
+      <div class="search-section">
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search tenant to update by ID or name"
+          (input)="filterTenants()"
+        />
+      </div>
+
+      <div *ngIf="filteredTenants.length > 0" class="apartment-list">
+        <div
+          *ngFor="let tenant of filteredTenants"
+          class="apartment-item"
+          (click)="selectTenantToUpdate(tenant)"
+        >
+          <span>Tenant ID: {{ tenant.tenantId }}</span>
+          <br />
+          <span>Full Name: {{ tenant.fullName }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="selectedTenant" class="update-form-container">
+        <h3>Update Tenant: {{ selectedTenant.tenantId }}</h3>
+        <form
+          [formGroup]="updateForm"
+          (ngSubmit)="onUpdate()"
+          class="apartment-form"
+        >
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tenantId">Tenant ID</label>
+              <input
+                id="tenantId"
+                formControlName="tenantId"
+                type="text"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="fullName">Full Name</label>
+              <input
+                id="fullName"
+                formControlName="fullName"
+                type="text"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input id="email" formControlName="email" type="email" required />
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone</label>
+              <input id="phone" formControlName="phone" type="text" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="apartmentNumber">Apartment Number</label>
+              <input
+                id="apartmentNumber"
+                formControlName="apartmentNumber"
+                type="text"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="leaseStartDate">Lease Start Date</label>
+              <input
+                id="leaseStartDate"
+                formControlName="leaseStartDate"
+                type="date"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="leaseEndDate">Lease End Date</label>
+              <input
+                id="leaseEndDate"
+                formControlName="leaseEndDate"
+                type="date"
+                required
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            [disabled]="!updateForm.valid"
+            class="submit-btn"
+          >
+            Update Tenant
+          </button>
+          <button type="button" (click)="onClearSearch()" class="cancel-btn">
+            Cancel
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="content-section" *ngIf="selectedOption === 'deleteTenant'">
+      <h2>Delete Tenant</h2>
+      <div class="search-section">
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search tenant to delete"
+          (input)="filterTenants()"
+        />
+      </div>
+
+      <div *ngFor="let tenant of filteredTenants" class="apartment-item">
+        <p><strong>Tenant ID:</strong> {{ tenant.tenantId }}</p>
+        <p><strong>Full Name:</strong> {{ tenant.fullName }}</p>
+        <button (click)="deleteTenant(tenant)" class="delete-btn">
+          Delete Tenant
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

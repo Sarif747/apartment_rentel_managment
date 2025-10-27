@@ -1,0 +1,243 @@
+
+<div class="lease-management-container">
+
+    <div class="sidebar">
+        <h2>Manage lease details</h2>
+
+        <div class="sidebar-button" [class.active]="activeView === 'create'" (click)="setActiveView('create')">
+            Create Lease
+        </div>
+
+        <div class="sidebar-button" [class.active]="activeView === 'view'" (click)="setActiveView('view')">
+            View Leases
+        </div>
+
+        <div class="sidebar-button" [class.active]="activeView === 'update'" (click)="setActiveView('update')">
+            Update Lease
+        </div>
+
+        <div class="sidebar-button" [class.active]="activeView === 'delete'" (click)="setActiveView('delete')">
+            Delete Lease
+        </div>
+    </div>
+
+
+    <div class="content-area">
+  
+        <div *ngIf="activeView === 'create'" class="form-container">
+            <h2>Create New Lease</h2>
+
+            <div class="form-group">
+                <label for="leaseNumber">Lease Number</label>
+                <input type="text" id="leaseNumber" [(ngModel)]="newLease.leaseNumber" class="form-control">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group half-width">
+                    <label for="apartmentNumber">Apartment Number</label>
+                    <input type="text" id="apartmentNumber" [(ngModel)]="newLease.apartmentNumber" class="form-control">
+                </div>
+
+                <div class="form-group half-width">
+                    <label for="tenantName">Tenant Name</label>
+                    <input type="text" id="tenantName" [(ngModel)]="newLease.tenantName" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group half-width">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" id="startDate" [(ngModel)]="newLease.startDate" class="form-control">
+                </div>
+
+                <div class="form-group half-width">
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate" [(ngModel)]="newLease.endDate" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group half-width">
+                    <label for="monthlyRent">Monthly Rent</label>
+                    <input type="number" id="monthlyRent" [(ngModel)]="newLease.monthlyRent" class="form-control">
+                </div>
+
+                <div class="form-group half-width">
+                    <label for="securityDeposit">Security Deposit</label>
+                    <input type="number" id="securityDeposit" [(ngModel)]="newLease.securityDeposit"
+                        class="form-control">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="leaseTerms">Lease Terms</label>
+                <textarea id="leaseTerms" [(ngModel)]="newLease.leaseterms" class="form-control"
+                    rows="3"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="specialTerms">Special Terms</label>
+                <textarea id="specialTerms" [(ngModel)]="newLease.specialTerms" class="form-control"
+                    rows="3"></textarea>
+            </div>
+
+            <button class="submit-button" (click)="createLease()">Create Lease</button>
+        </div>
+
+        <div *ngIf="activeView === 'view'" class="table-container">
+            <h2>View All Leases</h2>
+
+            <table class="leases-table">
+                <thead>
+                    <tr>
+                        <th>Lease #</th>
+                        <th>Apartment #</th>
+                        <th>Tenant</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Monthly Rent</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let lease of leases">
+                        <td>{{ lease.leaseNumber }}</td>
+                        <td>{{ lease.apartmentNumber }}</td>
+                        <td>{{ lease.tenantName }}</td>
+                        <td>{{ lease.startDate | date:'shortDate' }}</td>
+                        <td>{{ lease.endDate | date:'shortDate' }}</td>
+                        <td>${{ lease.monthlyRent }}</td>
+                        <td>
+                            <span [class.active-status]="isLeaseActive(lease)"
+                                [class.expired-status]="!isLeaseActive(lease)">
+                                {{ isLeaseActive(lease) ? 'Active' : 'Expired' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="action-button edit" (click)="selectLeaseForUpdate(lease)">Edit</button>
+                            <button class="action-button delete" (click)="selectLeaseForDelete(lease)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div *ngIf="activeView === 'update'" class="form-container">
+            <h2>Update Lease</h2>
+
+            <div *ngIf="!selectedLease">
+                <p>Please select a lease to update:</p>
+                <select [(ngModel)]="updateLeaseId" (change)="onUpdateLeaseSelect()" class="form-control">
+                    <option value="">-- Select Lease --</option>
+                    <option *ngFor="let lease of leases" [value]="lease.leaseNumber">
+                        {{ lease.leaseNumber }} - Apt {{ lease.apartmentNumber }} ({{ lease.tenantName }})
+                    </option>
+                </select>
+            </div>
+
+            <div *ngIf="selectedLease">
+                <div class="form-group">
+                    <label for="updateLeaseNumber">Lease Number</label>
+                    <input type="text" id="updateLeaseNumber" [(ngModel)]="selectedLease.leaseNumber"
+                        class="form-control">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <label for="updateApartmentNumber">Apartment Number</label>
+                        <input type="text" id="updateApartmentNumber" [(ngModel)]="selectedLease.apartmentNumber"
+                            class="form-control">
+                    </div>
+
+                    <div class="form-group half-width">
+                        <label for="updateTenantName">Tenant Name</label>
+                        <input type="text" id="updateTenantName" [(ngModel)]="selectedLease.tenantName"
+                            class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <label for="updateStartDate">Start Date</label>
+                        <input type="date" id="updateStartDate" [(ngModel)]="selectedLease.startDate"
+                            class="form-control">
+                    </div>
+
+                    <div class="form-group half-width">
+                        <label for="updateEndDate">End Date</label>
+                        <input type="date" id="updateEndDate" [(ngModel)]="selectedLease.endDate" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <label for="updateMonthlyRent">Monthly Rent</label>
+                        <input type="number" id="updateMonthlyRent" [(ngModel)]="selectedLease.monthlyRent"
+                            class="form-control">
+                    </div>
+
+                    <div class="form-group half-width">
+                        <label for="updateSecurityDeposit">Security Deposit</label>
+                        <input type="number" id="updateSecurityDeposit" [(ngModel)]="selectedLease.securityDeposit"
+                            class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="updateLeaseTerms">Special Terms</label>
+                    <textarea id="updateLeaseTerms" [(ngModel)]="selectedLease.leaseterms" class="form-control"
+                        rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="updateSpecialTerms">Special Terms</label>
+                    <textarea id="updateSpecialTerms" [(ngModel)]="selectedLease.specialTerms" class="form-control"
+                        rows="3"></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button class="submit-button" (click)="updateLease()">Update Lease</button>
+                    <button class="cancel-button" (click)="cancelUpdate()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        
+        <div *ngIf="activeView === 'delete'" class="form-container">
+            <h2>Delete Lease</h2>
+
+            <div *ngIf="!selectedLease">
+                <p>Please select a lease to delete:</p>
+                <select [(ngModel)]="deleteLeaseId" (change)="onDeleteLeaseSelect()" class="form-control">
+                    <option value="">-- Select Lease --</option>
+                    <option *ngFor="let lease of leases" [value]="lease.leaseNumber">
+                        {{ lease.leaseNumber }} - Apt {{ lease.apartmentNumber }} ({{ lease.tenantName }})
+                    </option>
+                </select>
+            </div>
+
+            <div *ngIf="selectedLease" class="delete-confirmation">
+                <h3>Confirm Deletion</h3>
+                <p>Are you sure you want to delete the following lease?</p>
+
+                <div class="lease-details">
+                    <p><strong>Lease Number:</strong> {{ selectedLease.leaseNumber }}</p>
+                    <p><strong>Apartment:</strong> {{ selectedLease.apartmentNumber }}</p>
+                    <p><strong>Tenant:</strong> {{ selectedLease.tenantName }}</p>
+                    <p><strong>Start Date:</strong>  {{ selectedLease.startDate }}</p>
+                    <p><strong>End Date:</strong>  {{ selectedLease.endDate }}</p>
+                </div>
+
+                <div class="warning-message">
+                    This action cannot be undone. All data associated with this lease will be permanently removed.
+                </div>
+
+                <div class="button-group">
+                    <button class="delete-button" (click)="deleteLease()">Confirm Delete</button>
+                    <button class="cancel-button" (click)="cancelDelete()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,16 @@
+<div class="app-container">
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a class="navbar-logo" href="/">Apartment Rental Management</a>
+      <div class="navbar-menu">
+        <a routerLink="/apartments" routerLinkActive="active">Apartments</a>
+        <a routerLink="/tenants" routerLinkActive="active">Tenants</a>
+        <a routerLink="/leases" routerLinkActive="active">Leases</a>
+        <a routerLink="/maintenance" routerLinkActive="active">Maintenance</a>
+        <a routerLink="/payments" routerLinkActive="active">Payments</a>
+        <a routerLink="/weather" routerLinkActive="active">Weather</a>
+      </div>
+    </div>
+  </nav>
+  <router-outlet></router-outlet> <!-- This is where routed components get displayed -->
+</div>

@@ -1,0 +1,220 @@
+<div class="maintenance-management-container">
+    <div class="sidebar">
+        <h2>Manage Maintenance Requests</h2>
+
+        <div class="sidebar-button" [class.active]="activeView === 'create'" (click)="setActiveView('create')">
+            Create Request
+        </div>
+
+        <div class="sidebar-button" [class.active]="activeView === 'view'" (click)="setActiveView('view')">
+            View Requests
+        </div>
+
+        <div class="sidebar-button" [class.active]="activeView === 'update'" (click)="setActiveView('update')">
+            Update Request
+        </div>
+
+        <div class="sidebar-button" [class.active]="activeView === 'delete'" (click)="setActiveView('delete')">
+            Delete Request
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div *ngIf="activeView === 'create'" class="form-container">
+            <h2>Create New Maintenance Request</h2>
+
+            <div class="form-group">
+                <label for="requestNumber">Request Number</label>
+                <input type="text" id="requestNumber" [(ngModel)]="newRequest.requestNumber" class="form-control">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group half-width">
+                    <label for="apartmentNumber">Apartment Number</label>
+                    <input type="text" id="apartmentNumber" [(ngModel)]="newRequest.apartmentNumber" class="form-control">
+                </div>
+
+                <div class="form-group half-width">
+                    <label for="tenantName">Tenant Name</label>
+                    <input type="text" id="tenantName" [(ngModel)]="newRequest.tenantName" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="issueDescription">Issue Description</label>
+                <textarea id="issueDescription" [(ngModel)]="newRequest.issueDescription" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group half-width">
+                    <label for="requestDate">Request Date</label>
+                    <input type="date" id="requestDate" [(ngModel)]="newRequest.requestDate" class="form-control">
+                </div>
+
+                <div class="form-group half-width">
+                    <label for="priority">Priority</label>
+                    <select id="priority" [(ngModel)]="newRequest.priority" class="form-control">
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" [(ngModel)]="newRequest.status" class="form-control">
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+
+            <button class="submit-button" (click)="createMaintenanceRequest()">Create Request</button>
+        </div>
+
+        <div *ngIf="activeView === 'view'" class="table-container">
+            <h2>View All Maintenance Requests</h2>
+
+            <table class="maintenance-table">
+                <thead>
+                    <tr>
+                        <th>Request #</th>
+                        <th>Apartment #</th>
+                        <th>Tenant</th>
+                        <th>Issue Description</th>
+                        <th>Request Date</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let request of maintenanceRequests">
+                        <td>{{ request.requestNumber }}</td>
+                        <td>{{ request.apartmentNumber }}</td>
+                        <td>{{ request.tenantName }}</td>
+                        <td>{{ request.issueDescription }}</td>
+                        <td>{{ request.requestDate | date:'shortDate' }}</td>
+                        <td>{{ request.priority }}</td>
+                        <td>
+                            <span [class.pending-status]="request.status === 'Pending'"
+                                  [class.in-progress-status]="request.status === 'In Progress'"
+                                  [class.completed-status]="request.status === 'Completed'">
+                                {{ request.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="action-button edit" (click)="selectRequestForUpdate(request)">Edit</button>
+                            <button class="action-button delete" (click)="selectRequestForDelete(request)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div *ngIf="activeView === 'update'" class="form-container">
+            <h2>Update Maintenance Request</h2>
+
+            <div *ngIf="!selectedRequest">
+                <p>Please select a request to update:</p>
+                <select [(ngModel)]="updateRequestId" (change)="onUpdateRequestSelect()" class="form-control">
+                    <option value="">-- Select Request --</option>
+                    <option *ngFor="let request of maintenanceRequests" [value]="request.requestNumber">
+                        {{ request.requestNumber }} - Apt {{ request.apartmentNumber }} ({{ request.tenantName }})
+                    </option>
+                </select>
+            </div>
+
+            <div *ngIf="selectedRequest">
+                <div class="form-group">
+                    <label for="updateRequestNumber">Request Number</label>
+                    <input type="text" id="updateRequestNumber" [(ngModel)]="selectedRequest.requestNumber" class="form-control">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <label for="updateApartmentNumber">Apartment Number</label>
+                        <input type="text" id="updateApartmentNumber" [(ngModel)]="selectedRequest.apartmentNumber" class="form-control">
+                    </div>
+
+                    <div class="form-group half-width">
+                        <label for="updateTenantName">Tenant Name</label>
+                        <input type="text" id="updateTenantName" [(ngModel)]="selectedRequest.tenantName" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="updateIssueDescription">Issue Description</label>
+                    <textarea id="updateIssueDescription" [(ngModel)]="selectedRequest.issueDescription" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <label for="updateRequestDate">Request Date</label>
+                        <input type="date" id="updateRequestDate" [(ngModel)]="selectedRequest.requestDate" class="form-control">
+                    </div>
+
+                    <div class="form-group half-width">
+                        <label for="updatePriority">Priority</label>
+                        <select id="updatePriority" [(ngModel)]="selectedRequest.priority" class="form-control">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="updateStatus">Status</label>
+                    <select id="updateStatus" [(ngModel)]="selectedRequest.status" class="form-control">
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <button class="submit-button" (click)="updateMaintenanceRequest()">Update Request</button>
+                    <button class="cancel-button" (click)="cancelUpdate()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="activeView === 'delete'" class="form-container">
+            <h2>Delete Maintenance Request</h2>
+
+            <div *ngIf="!selectedRequest">
+                <p>Please select a request to delete:</p>
+                <select [(ngModel)]="deleteRequestId" (change)="onDeleteRequestSelect()" class="form-control">
+                    <option value="">-- Select Request --</option>
+                    <option *ngFor="let request of maintenanceRequests" [value]="request.requestNumber">
+                        {{ request.requestNumber }} - Apt {{ request.apartmentNumber }} ({{ request.tenantName }})
+                    </option>
+                </select>
+            </div>
+
+            <div *ngIf="selectedRequest" class="delete-confirmation">
+                <h3>Confirm Deletion</h3>
+                <p>Are you sure you want to delete the following maintenance request?</p>
+
+                <div class="request-details">
+                    <p><strong>Request Number:</strong> {{ selectedRequest.requestNumber }}</p>
+                    <p><strong>Apartment:</strong> {{ selectedRequest.apartmentNumber }}</p>
+                    <p><strong>Tenant:</strong> {{ selectedRequest.tenantName }}</p>
+                    <p><strong>Issue Description:</strong> {{ selectedRequest.issueDescription }}</p>
+                    <p><strong>Request Date:</strong> {{ selectedRequest.requestDate | date:'shortDate' }}</p>
+                </div>
+
+                <div class="warning-message">
+                    This action cannot be undone. All data associated with this request will be permanently removed.
+                </div>
+
+                <div class="button-group">
+                    <button class="delete-button" (click)="deleteMaintenanceRequest()">Confirm Delete</button>
+                    <button class="cancel-button" (click)="cancelDelete()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

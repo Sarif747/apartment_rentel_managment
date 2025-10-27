@@ -1,0 +1,238 @@
+<div class="app-container">
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <p>Manage apartment details</p>
+    </div>
+    <ul class="sidebar-menu">
+      <li [class.active]="selectedOption === 'createApartment'">
+        <a (click)="selectOption('createApartment')">
+          <i class="fas fa-plus-circle"></i> Create Apartment
+        </a>
+      </li>
+      <li [class.active]="selectedOption === 'viewApartments'">
+        <a (click)="selectOption('viewApartments')">
+          <i class="fas fa-list"></i> View Apartments
+        </a>
+      </li>
+      <li [class.active]="selectedOption === 'updateApartment'">
+        <a (click)="selectOption('updateApartment')">
+          <i class="fas fa-edit"></i> Update Apartment
+        </a>
+      </li>
+      <li [class.active]="selectedOption === 'deleteApartment'">
+        <a (click)="selectOption('deleteApartment')">
+          <i class="fas fa-trash"></i> Delete Apartment
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="main-content">
+    <div *ngIf="successMessage" class="alert alert-success">
+      {{ successMessage }}
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+
+    <div class="content-section" *ngIf="selectedOption === 'createApartment'">
+      <h2>Create New Apartment</h2>
+      <form [formGroup]="apartmentForm" (ngSubmit)="onSubmit()" class="apartment-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="apartmentNumber">Apartment Number</label>
+            <input id="apartmentNumber" formControlName="apartmentNumber" type="text" required>
+          </div>
+          <div class="form-group">
+            <label for="buildingNumber">Building Number</label>
+            <input id="buildingNumber" formControlName="buildingNumber" type="text" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="address">Full Address</label>
+          <input id="address" formControlName="address" type="text" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="bedrooms">Bedrooms</label>
+            <input id="bedrooms" formControlName="bedrooms" type="number" min="1" required>
+          </div>
+          <div class="form-group">
+            <label for="bathrooms">Bathrooms</label>
+            <input id="bathrooms" formControlName="bathrooms" type="number" min="1" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="price">Monthly Rent</label>
+            <input id="price" formControlName="price" type="number" min="0" required>
+          </div>
+          <div class="form-group">
+            <label for="squareFootage">Square Footage</label>
+            <input id="squareFootage" formControlName="squareFootage" type="number" min="100" required>
+          </div>
+        </div>
+
+        <div class="form-group amenities">
+          <label>Amenities</label>
+          <div class="checkbox-group">
+            <label>
+              <input type="checkbox" formControlName="pool"> Pool
+            </label>
+            <label>
+              <input type="checkbox" formControlName="gym"> Gym
+            </label>
+            <label>
+              <input type="checkbox" formControlName="parking"> Parking
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="!apartmentForm.valid" class="submit-btn">
+          Create Apartment
+        </button>
+      </form>
+    </div>
+
+    <div class="content-section" *ngIf="selectedOption === 'viewApartments'">
+      <h2>View Apartments</h2>
+      <div class="search-section">
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Search by apartment number or address" (input)="filterApartments()">
+      </div>
+      
+      <div *ngIf="!searchQuery || apartments.length > 0">
+        <div class="apartment-list">
+          <div *ngFor="let apartment of filteredApartments" class="apartment-item">
+            <p><strong>Apartment Number:</strong> {{ apartment.apartmentNumber }}</p>
+            <p><strong>Building Number:</strong> {{ apartment.buildingNumber }}</p>
+            <p><strong>Address:</strong> {{ apartment.address }}</p>
+            <p><strong>Bedrooms:</strong> {{ apartment.bedrooms }}</p>
+            <p><strong>Bathrooms:</strong> {{ apartment.bathrooms }}</p>
+            <p><strong>Monthly Rent:</strong> {{ apartment.price | currency }}</p>
+            <p><strong>Square Footage:</strong> {{ apartment.squareFootage }}</p>
+            <p><strong>Amenities:</strong> 
+                {{ apartment.amenities }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="filteredApartments.length === 0">
+        <p>No apartments found for the search criteria.</p>
+      </div>
+    </div>
+
+    <div class="content-section" *ngIf="selectedOption === 'updateApartment'">
+      <h2>Update Apartment</h2>
+      <div class="search-section">
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          placeholder="Search apartment to update by number or address" 
+          (input)="filterApartments()" 
+        />
+      </div>
+
+      <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+
+      <div *ngIf="filteredApartments.length > 0" class="apartment-list">
+        <div 
+          *ngFor="let apartment of filteredApartments" 
+          class="apartment-item"
+          (click)="selectApartmentToUpdate(apartment)"
+        >
+          <span>Apartment Number: {{ apartment.apartmentNumber }}</span>
+          <br>
+          <span>Address: {{ apartment.address }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="selectedApartment" class="update-form-container">
+        <h3>Update Apartment: {{ selectedApartment.apartmentNumber }}</h3>
+        <form [formGroup]="updateForm" (ngSubmit)="onUpdate()" class="apartment-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="updateApartmentNumber">Apartment Number</label>
+              <input id="updateApartmentNumber" formControlName="apartmentNumber" type="text" required>
+            </div>
+            <div class="form-group">
+              <label for="updateBuildingNumber">Building Number</label>
+              <input id="updateBuildingNumber" formControlName="buildingNumber" type="text" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="updateAddress">Full Address</label>
+            <input id="updateAddress" formControlName="address" type="text" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="updateBedrooms">Bedrooms</label>
+              <input id="updateBedrooms" formControlName="bedrooms" type="number" min="1" required>
+            </div>
+            <div class="form-group">
+              <label for="updateBathrooms">Bathrooms</label>
+              <input id="updateBathrooms" formControlName="bathrooms" type="number" min="1" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="updatePrice">Price</label>
+              <input id="updatePrice" formControlName="price" type="number" min="0" required>
+            </div>
+            <div class="form-group">
+              <label for="updateSquareFootage">Square Footage</label>
+              <input id="updateSquareFootage" formControlName="squareFootage" type="number" min="100" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Amenities</label>
+            <div>
+              <label>
+                <input type="checkbox" formControlName="pool" > Pool
+              </label>
+              <label>
+                <input type="checkbox" formControlName="gym" > Gym
+              </label>
+              <label>
+                <input type="checkbox" formControlName="parking" > Parking
+              </label>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-actions">
+              <button type="submit" [disabled]="!updateForm.valid" class="submit-btn">
+                Update Apartment
+              </button>
+              <button type="button" (click)="onClearSearch()" class="cancel-btn">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="content-section" *ngIf="selectedOption === 'deleteApartment'">
+      <h2>Delete Apartment</h2>
+      <div class="search-section">
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Search apartment to delete" (input)="filterApartments()">
+      </div>
+      <div *ngFor="let apartment of filteredApartments" class="apartment-item">
+        <p><strong>Apartment Number:</strong> {{ apartment.apartmentNumber }}</p>
+        <p><strong>Building Number:</strong> {{ apartment.buildingNumber }}</p>
+        <p><strong>Address:</strong> {{ apartment.address }}</p>
+        <button (click)="deleteApartment(apartment)" class="delete-btn">
+          Delete Apartment
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
